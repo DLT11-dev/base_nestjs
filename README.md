@@ -41,6 +41,8 @@ npm run start:prod
 
 ## API Endpoints
 
+**Base URL:** `http://localhost:8080/api/v1`
+
 ### Authentication
 - `POST /auth/login` - Đăng nhập
 - `POST /users/register` - Đăng ký tài khoản
@@ -58,26 +60,35 @@ npm run start:prod
 
 ## Swagger Documentation
 
-Truy cập Swagger UI tại: `http://localhost:3000/api`
+Truy cập Swagger UI tại: `http://localhost:8080/api`
 
 ## Cấu trúc dự án
 
 ```
 src/
-├── auth/                 # Authentication module
-│   ├── guards/          # Passport guards
-│   ├── strategies/      # Passport strategies
-│   ├── auth.controller.ts
-│   ├── auth.service.ts
-│   └── auth.module.ts
-├── users/               # Users module
-│   ├── dto/            # Data Transfer Objects
-│   ├── user.entity.ts
-│   ├── users.controller.ts
-│   ├── users.service.ts
-│   └── users.module.ts
-├── app.module.ts        # Root module
-└── main.ts             # Application entry point
+├── modules/             # Business modules
+│   ├── auth/           # Authentication module
+│   │   ├── guards/     # Passport guards
+│   │   ├── strategies/ # Passport strategies
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   └── auth.module.ts
+│   ├── users/          # Users module
+│   │   ├── dto/        # Data Transfer Objects
+│   │   ├── user.entity.ts
+│   │   ├── users.controller.ts
+│   │   ├── users.service.ts
+│   │   └── users.module.ts
+│   ├── demo/           # Demo module
+│   │   ├── demo.controller.ts
+│   │   └── demo.module.ts
+│   └── index.ts        # Export all modules
+├── common/             # Shared components
+│   ├── interceptors/   # Global interceptors
+│   └── middleware/     # Global middleware
+├── config/             # Configuration files
+├── app.module.ts       # Root module
+└── main.ts            # Application entry point
 ```
 
 ## Biến môi trường
@@ -97,7 +108,7 @@ JWT_SECRET=your-super-secret-jwt-key-here
 JWT_EXPIRES_IN=1d
 
 # App
-PORT=3000
+PORT=8080
 NODE_ENV=development
 ```
 
@@ -106,7 +117,7 @@ NODE_ENV=development
 ### 1. Đăng ký tài khoản
 
 ```bash
-curl -X POST http://localhost:3000/users/register \
+curl -X POST http://localhost:8080/api/v1/users/register \
   -H "Content-Type: application/json" \
   -d '{
     "email": "user@example.com",
@@ -119,7 +130,7 @@ curl -X POST http://localhost:3000/users/register \
 ### 2. Đăng nhập
 
 ```bash
-curl -X POST http://localhost:3000/auth/login \
+curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "username123",
@@ -130,7 +141,7 @@ curl -X POST http://localhost:3000/auth/login \
 ### 3. Truy cập protected route
 
 ```bash
-curl -X GET http://localhost:3000/users/profile \
+curl -X GET http://localhost:8080/api/v1/users/profile \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
@@ -138,25 +149,25 @@ curl -X GET http://localhost:3000/users/profile \
 
 ```bash
 # Test endpoint cơ bản
-curl -X GET http://localhost:3000/demo/test
+curl -X GET http://localhost:8080/api/v1/demo/test
 
 # Test POST với body
-curl -X POST http://localhost:3000/demo/test-post \
+curl -X POST http://localhost:8080/api/v1/demo/test-post \
   -H "Content-Type: application/json" \
   -d '{"test": "data", "number": 123}'
 
 # Test endpoint lỗi
-curl -X GET http://localhost:3000/demo/error
+curl -X GET http://localhost:8080/api/v1/demo/error
 
 # Test endpoint chậm
-curl -X GET http://localhost:3000/demo/slow
+curl -X GET http://localhost:8080/api/v1/demo/slow
 
 # Test GET với ID (thành công)
-curl -X GET http://localhost:3000/demo/1
-curl -X GET http://localhost:3000/demo/2
+curl -X GET http://localhost:8080/api/v1/demo/1
+curl -X GET http://localhost:8080/api/v1/demo/2
 
 # Test GET với ID (404 error)
-curl -X GET http://localhost:3000/demo/999
+curl -X GET http://localhost:8080/api/v1/demo/999
 ```
 
 ## Scripts
@@ -167,6 +178,30 @@ curl -X GET http://localhost:3000/demo/999
 - `npm run start:prod` - Chạy production server
 - `npm run test` - Chạy tests
 - `npm run lint` - Kiểm tra code style
+
+## Cấu trúc Modules
+
+Dự án được tổ chức theo mô hình modules để dễ dàng mở rộng và bảo trì:
+
+### Quy tắc tổ chức modules:
+1. **Tất cả business logic được đặt trong `src/modules/`**
+2. **Mỗi module có cấu trúc nhất quán:**
+   - `dto/` - Data Transfer Objects
+   - `entities/` - Database entities  
+   - `*.controller.ts` - API endpoints
+   - `*.service.ts` - Business logic
+   - `*.module.ts` - Module configuration
+   - `guards/` - Module-specific guards (nếu cần)
+
+3. **Import/Export:**
+   - Sử dụng `@/modules/module-name` để import
+   - Export tất cả modules qua `src/modules/index.ts`
+
+### Thêm module mới:
+1. Tạo thư mục module trong `src/modules/`
+2. Tạo các file cần thiết theo cấu trúc chuẩn
+3. Thêm export vào `src/modules/index.ts`
+4. Import và sử dụng trong `src/app.module.ts`
 
 ## Path Alias
 
@@ -183,6 +218,5 @@ import { UsersService } from '@users/users.service';
 ### Các alias có sẵn:
 - `@/*` - src/*
 - `@common/*` - src/common/*
-- `@auth/*` - src/auth/*
-- `@users/*` - src/users/*
-- `@demo/*` - src/demo/* 
+- `@modules/*` - src/modules/*
+- `@config/*` - src/config/*

@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Body, Param, HttpException, HttpStatus, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
+import { ApiTags, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('demo')
 @Controller('demo')
@@ -13,8 +22,8 @@ export class DemoController {
       data: {
         id: 1,
         name: 'Test Data',
-        status: 'active'
-      }
+        status: 'active',
+      },
     };
   }
 
@@ -24,26 +33,29 @@ export class DemoController {
     return {
       message: 'POST request success!',
       receivedData: body,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
   @Get('error')
   @ApiResponse({ status: 500, description: 'error' })
   async testError() {
-    throw new HttpException('This is a test error', HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new HttpException(
+      'This is a test error',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
   @Get('slow')
   @ApiResponse({ status: 200, description: 'slow' })
   async testSlow() {
     // simulate slow request
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     return {
       message: 'slow request success!',
       duration: '1500ms',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -55,7 +67,12 @@ export class DemoController {
     const mockData = {
       1: { id: 1, name: 'User 1', email: 'user1@example.com', role: 'admin' },
       2: { id: 2, name: 'User 2', email: 'user2@example.com', role: 'user' },
-      3: { id: 3, name: 'User 3', email: 'user3@example.com', role: 'moderator' }
+      3: {
+        id: 3,
+        name: 'User 3',
+        email: 'user3@example.com',
+        role: 'moderator',
+      },
     };
 
     const data = mockData[id];
@@ -66,7 +83,7 @@ export class DemoController {
     return {
       message: `get data by id ${id} success!`,
       data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
-} 
+}

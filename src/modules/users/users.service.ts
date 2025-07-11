@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -15,22 +19,23 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, username, password, fullName } = createUserDto;
 
-    // Kiểm tra email đã tồn tại
-    const existingEmail = await this.usersRepository.findOne({ where: { email } });
+    const existingEmail = await this.usersRepository.findOne({
+      where: { email },
+    });
     if (existingEmail) {
-      throw new ConflictException('Email đã được sử dụng');
+      throw new ConflictException('Email or username already exists');
     }
 
-    // Kiểm tra username đã tồn tại
-    const existingUsername = await this.usersRepository.findOne({ where: { username } });
+    const existingUsername = await this.usersRepository.findOne({
+      where: { username },
+    });
     if (existingUsername) {
-      throw new ConflictException('Username đã được sử dụng');
+      throw new ConflictException('Email or username already exists');
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Tạo user mới
     const user = this.usersRepository.create({
       email,
       username,
@@ -39,8 +44,8 @@ export class UsersService {
     });
 
     const savedUser = await this.usersRepository.save(user);
-    
-    // Không trả về password
+
+    // delete password
     delete savedUser.password;
     return savedUser;
   }
@@ -56,17 +61,16 @@ export class UsersService {
   async findById(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException('Không tìm thấy user');
+      throw new NotFoundException('User not found');
     }
     return user;
   }
 
   async findAll(): Promise<User[]> {
     const users = await this.usersRepository.find();
-    // Không trả về password
-    return users.map(user => {
+    return users.map((user) => {
       delete user.password;
       return user;
     });
   }
-} 
+}

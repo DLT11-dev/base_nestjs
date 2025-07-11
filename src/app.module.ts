@@ -1,15 +1,15 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from '@/auth/auth.module';
-import { UsersModule } from '@/users/users.module';
-import { DemoModule } from '@/demo/demo.module';
+import { AuthModule, UsersModule, DemoModule } from '@/modules';
 import { LoggerMiddleware } from '@common/middleware/logger.middleware';
+import appConfig from '@/config/app.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [appConfig],
     }),
     TypeOrmModule.forRoot({
       type: 'sqlite',
@@ -24,8 +24,6 @@ import { LoggerMiddleware } from '@common/middleware/logger.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes('*'); // apply to all routes
+    consumer.apply(LoggerMiddleware).forRoutes('*'); // apply to all routes
   }
-} 
+}

@@ -16,12 +16,11 @@ export class LoggingInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
-    const { method, url, ip, headers } = request;
-    const userAgent = headers['user-agent'] || 'Unknown';
+    const { method, url } = request;
     const startTime = Date.now();
 
     return next.handle().pipe(
-      tap((data) => {
+      tap((_data) => {
         const endTime = Date.now();
         const responseTime = endTime - startTime;
         const statusCode = response.statusCode;
@@ -29,14 +28,14 @@ export class LoggingInterceptor implements NestInterceptor {
         // Log successful response
         this.logger.log(
           `📤 ${method} ${url} - ${statusCode} - ${responseTime}ms`,
-          'LoggingInterceptor'
+          'LoggingInterceptor',
         );
 
         // Log slow requests (> 1000ms)
         if (responseTime > 1000) {
           this.logger.warn(
             `🐌 Slow Request: ${method} ${url} took ${responseTime}ms`,
-            'LoggingInterceptor'
+            'LoggingInterceptor',
           );
         }
       }),
@@ -48,11 +47,11 @@ export class LoggingInterceptor implements NestInterceptor {
         this.logger.error(
           `❌ ${method} ${url} - ${error.status || 500} - ${responseTime}ms - ${error.message}`,
           error.stack,
-          'LoggingInterceptor'
+          'LoggingInterceptor',
         );
 
         throw error;
       }),
     );
   }
-} 
+}

@@ -9,15 +9,20 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
 
+  // Global prefix for all routes
+  app.setGlobalPrefix('api/v1');
+
   // CORS
   app.enableCors();
 
   // Validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // Global interceptor for logging
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -29,17 +34,18 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 8081;
   await app.listen(port);
-  
+
   const logger = new Logger('Bootstrap');
   logger.log(`🚀 Application is running at: http://localhost:${port}`);
   logger.log(`📚 Swagger UI: http://localhost:${port}/api`);
+  logger.log(`🔗 API Base URL: http://localhost:${port}/api/v1`);
   logger.log(`📊 Logging middleware is activated`);
 }
 
-bootstrap(); 
+bootstrap();
