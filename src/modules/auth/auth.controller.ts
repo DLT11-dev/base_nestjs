@@ -1,7 +1,7 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiResponse } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto } from '@/modules/users/dto/login.dto';
+import { LoginDto, RefreshTokenDto } from './dto/auth.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -9,7 +9,6 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  @ApiResponse({ status: 200, description: 'success' })
   async login(@Body() loginDto: LoginDto) {
     const { username, password } = loginDto;
 
@@ -21,5 +20,10 @@ export class AuthController {
 
     // Generate token
     return this.authService.login(user);
+  }
+
+  @Post('refresh')
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto.refresh_token);
   }
 }

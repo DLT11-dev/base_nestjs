@@ -5,12 +5,16 @@ import {
   Body,
   UseGuards,
   Request,
+  Param,
+  Delete,
+  Patch,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './user.entity';
-import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
+import { AuthRoles } from '@/common/decorators/roles.decorator';
+import { Role } from '@/common/enum/role';
+import { RequestModel } from '@/common/models/request.model';
 
 @ApiTags('users')
 @Controller('users')
@@ -18,24 +22,32 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  @ApiResponse({ status: 201, description: 'success', type: User })
-  async register(@Body() createUserDto: CreateUserDto): Promise<User> {
+  async register(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.create(createUserDto);
   }
 
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'success', type: User })
-  async getProfile(@Request() req): Promise<User> {
+  @AuthRoles(Role.USER, Role.MANAGER, Role.ADMIN)
+  async getProfile(@Request() req: RequestModel): Promise<UserResponseDto> {
+    console.log(req.user)
     return this.usersService.findById(req.user.id);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'success', type: [User] })
-  async findAll(): Promise<User[]> {
+  @AuthRoles(Role.MANAGER, Role.ADMIN)
+  async findAll(): Promise<UserResponseDto[]> {
     return this.usersService.findAll();
+  }
+
+  @Patch(':id')
+  @AuthRoles(Role.USER, Role.MANAGER, Role.ADMIN)
+  async update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  @AuthRoles(Role.ADMIN)
+  async delete(@Param('id') id: number): Promise<UserResponseDto> {
+    return this.usersService.delete(id);
   }
 }
